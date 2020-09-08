@@ -30,7 +30,7 @@ def generate_header(user_email_address, source, filter_param_name=None, filter_p
 	return header
 
 
-def generate_html_file(htmlcode, remind=False):
+def generate_html_file(htmlcode, remind=False, prefix=''):
 	''' generates HTML file of reminder
 	'''
 	try:
@@ -38,8 +38,8 @@ def generate_html_file(htmlcode, remind=False):
 	except FileExistsError:
 		pass
 	reportType = 'reminder' if remind else 'report'
-	filename = './archive/{}_{:%Y-%m-%d_%H-%M-%S}.html'.format(
-		reportType, datetime.datetime.now())
+	filename = './archive/{}{}_{:%Y-%m-%d_%H-%M-%S}.html'.format(
+		prefix, reportType, datetime.datetime.now())
 	with open(filename, 'w') as file:
 		file.write(htmlcode)
 	return filename
