@@ -52,10 +52,20 @@ if __name__ == '__main__':
 
 	# connect to jenkins server - if not possible, log and end program execution
 	try:
-		server = jenkins.Jenkins(config['jenkins_url'], username=config['jenkins_username'], password=config['jenkins_api_token'])
-		user = server.get_whoami()
+		server = jenkins.Jenkins(config['jenkins_url'], username=config.get('jenkins_username', None), password=config.get('jenkins_api_token', None))
 	except Exception as e:
 		print("Error connecting to Jenkins server: ", e)
+		sys.exit(1)
+
+	# Get the source email address from the config file, or from jenkins
+	if config['email_from']:
+		user_email_address = config['email_from']
+	elif config['jenkins_username'] and config['jenkins_api_token']:
+		user = server.get_whoami()
+		user_properties = user['property']
+		user_email_address = [prop['address'] for prop in user_properties if prop['_class'] == 'hudson.tasks.Mailer$UserProperty'][0]
+	else:
+		print("No email_from or jenkins credentials provided.")
 		sys.exit(1)
 
 	# fetch optional config options, return None if not present
@@ -66,8 +76,8 @@ if __name__ == '__main__':
 	# if remind, header source should be blocker_file
 	# if report, header source should be job_search_fields
 	if remind_flag:
-		header = generate_header(user, blocker_file, filter_param_name=fpn, filter_param_value=fpv, remind=True)
+		header = generate_header(user_email_address, blocker_file, filter_param_name=fpn, filter_param_value=fpv, remind=True)
 		run_remind(config, blockers, server, header)
 	else:
-		header = generate_header(user, config['job_search_fields'], filter_param_name=fpn, filter_param_value=fpv)
+		header = generate_header(user_email_address, config['job_search_fields'], filter_param_name=fpn, filter_param_value=fpv)
 		run_report(config, blockers, preamble_file, server, header, test_email, no_email, template_file)

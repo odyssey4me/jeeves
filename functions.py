@@ -7,14 +7,12 @@ import bugzilla
 from jira import JIRA
 
 
-def generate_header(user, source, filter_param_name=None, filter_param_value=None, remind=False):
+def generate_header(user_email_address, source, filter_param_name=None, filter_param_value=None, remind=False):
 	''' generates header
 		takes jenkins user and optionally takes name and value of jenkins param to filter builds by
 		if remind is true, header source should be blocker_file
 		if remind is false, header source should be job_search_fields
 	'''
-	user_properties = user['property']
-	user_email_address = [prop['address'] for prop in user_properties if prop['_class'] == 'hudson.tasks.Mailer$UserProperty'][0]
 	date = '{:%m/%d/%Y at %I:%M%p %Z}'.format(datetime.datetime.now())
 
 	# show only filename in remind header, not full path
@@ -356,8 +354,6 @@ def validate_config(config, no_email):
 	'''
 	required_fields = [
 		'jenkins_url',
-		'jenkins_username',
-		'jenkins_api_token',
 		'job_search_fields',
 		'bz_url',
 		'jira_url',
